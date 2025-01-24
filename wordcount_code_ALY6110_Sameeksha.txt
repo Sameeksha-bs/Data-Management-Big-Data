@@ -1,0 +1,32 @@
+import org.apache.spark.SparkContext
+
+// Read the README.md file
+val txtFile = "/Users/sameekshabs/Desktop/spark/README.md"
+val txtData = sc.textFile(txtFile)
+
+// Cache the data
+txtData.cache()
+
+// Count the data
+txtData.count()
+
+// Perform the word count
+val wcData = txtData.flatMap(l => l.split(" "))
+                    .map(word => (word, 1))
+                    .reduceByKey(_ + _)
+
+wcData.collect().foreach(println)
+
+// Answering the questions
+val hadoopCount = wcData.filter(_._1 == "Hadoop").collect
+if (hadoopCount.nonEmpty) {
+    println(s"The word 'Hadoop' is counted ${hadoopCount(0)._2} times.")
+} else {
+    println("The word 'Hadoop' does not appear in the file.")
+}
+
+val mostCommonWord = wcData.reduce((a, b) => if (a._2 > b._2) a else b)
+println(s"The most common word is '${mostCommonWord._1}' and it occurs ${mostCommonWord._2} times.")
+
+val leastCommonWord = wcData.reduce((a, b) => if (a._2 < b._2) a else b)
+println(s"The word that occurs the fewest times is '${leastCommonWord._1}' and it occurs ${leastCommonWord._2} times.")
